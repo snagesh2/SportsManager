@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<title>Basic 87</title>
+<meta charset="iso-8859-1">
+<link rel="stylesheet" href="styles/layout.css" type="text/css">
+<!--[if lt IE 9]><script src="scripts/html5shiv.js"></script><![endif]-->
+<head>
+  <script src="../server/static/canvasjs.min.js"></script>
+        <script src="../server/static/jquery-3.3.1.min.js"></script>
+
+  <script>
+window.onload = function () {
+
+var dps = []; // dataPoints
+var chart = new CanvasJS.Chart("chartContainer", {
+	title :{
+		text: "Dynamic Data"
+	},
+	axisY: {
+		includeZero: false
+	},
+	data: [{
+		type: "line",
+		dataPoints: dps
+	}]
+});
+
+var xVal = 0;
+var yVal = 100;
+var updateInterval = 200;
+var dataLength = 20; // number of dataPoints visible at any point
+
+var updateChart = function (count) {
+	$.ajax({
+	  url: "/api/get_datapoints",
+	  dataType:"json",
+	  success: function( result ) {
+	  	console.log(result);
+	  	var last = result.data.slice(-1)[0] ;
+	  	if(dps[0])if(last[0]==dps.slice(-1)[0].x)return;
+	    dps.push({
+			x: last[0],
+			y: last[1]
+		});
+
+		if (dps.length > dataLength) {
+			dps.shift();
+		}
+
+		chart.render();
+	  }
+	});
+};
+
+
+updateChart(dataLength);
+setInterval(function(){updateChart()}, updateInterval);
+
+}
+</script>
+<script>
+$(document).ready(function() {
+  $('#weatherLocation').click(function() {
+    let city = $('#location').val();
+    $('#location').val("");
+    $.ajax({
+      url: "/api/get_player_bio",
+      type: 'GET',
+      data: {
+        format: 'json'
+      },
+      success: function(response) {
+        $('.result').text(`The humidity in ${city} is ${response.main.humidity}%`);
+        $('.showTemp').text(`The temperature in Kelvins is ${response.main.temp}.`);
+      },
+      error: function() {
+        $('#errors').text("There was an error processing your request. Please try again.")
+      }
+    });
+  });
+});
+</script>
+</head>
+<body>
+<div class="wrapper row1">
+  <header id="header" class="clear">
+    <div id="hgroup">
+      <h1><a href="#">Player</a></h1>
+      <h2>This contains the Players Data</h2>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="#bio"> Player Bio</a></li>
+        <li><a href="#graph">Graph</a></li>
+      </ul>
+    </nav>
+  </header>
+</div>
+<!-- content -->
+<div class="wrapper row2">
+  <div id="container" class="clear">
+
+    <!-- main content -->
+    <div id="bio">
+      <br>
+      <section id="services" class="last clear">
+        <ul>
+          <li>
+            <article id="clear">
+                <figcaption>
+
+                  <div id = "result"></div>
+
+                </figcaption>
+            </article>
+          </li>
+          <li class="last">
+            <article class="clear">
+              <figure><img src="images/demo/180x150.gif" alt="">
+                <figcaption>
+                  <h2>Indonectetus facilis leo nibh</h2>
+                  <p>You can use and modify the template for both personal and commercial use. You must keep all copyright information and credit links in the template and associated files. For more HTML5 templates visit <a href="http://www.os-templates.com/">free website templates</a>.</p>
+                  <footer class="more"><a href="#">Read More &raquo;</a></footer>
+                </figcaption>
+              </figure>
+            </article>
+          </li>
+        </ul>
+      </section>
+    </div>
+     <!-- content body -->
+    <div id="graph">
+      <!-- One Quarter -->
+      <br>
+      <section id="latest" class="clear">
+        <div id="chartContainer" style="height: 370px; width:100%;"></div>
+
+
+      </section>
+    </div>
+
+    <!-- / content body -->
+  </div>
+</div>
+<!-- Footer -->
+<div class="wrapper row3">
+  <footer id="footer" class="clear">
+    <p class="fl_left">Copyright &copy; 2012 - All Rights Reserved - <a href="#">Domain Name</a></p>
+    <p class="fl_right">Template by <a href="http://www.os-templates.com/" title="Free Website Templates">OS Templates</a></p>
+  </footer>
+</div>
+</body>
+</html>
